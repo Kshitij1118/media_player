@@ -30,37 +30,54 @@ let queue = [];
 let themeIcon = document.querySelector(".theme-icon");
 let isLightTheme = false;
 
-// DOM Elements for drag-and-drop
-let dropArea = document.getElementById('drop-area');
-let dragUploadZone = document.getElementById('drag-upload-zone');
-let fileInput = document.getElementById('file-upload');
-
 const music_list = [
   {
-    img: "images/stay.png",
-    name: "Stay",
-    artist: "The Kid LAROI, Justin Bieber",
-    music: "music/stay.mp3",
+    img: "images/mirage.jpg",
+    name: "Mirage",
+    artist: "One Republic, Assassin's Creed",
+    music: "music/Mirage.mp3",
   },
   {
-    img: "images/fallingdown.jpg",
-    name: "Falling Down",
-    artist: "Wid Cards",
-    music: "music/fallingdown.mp3",
+    img: "images/wavy.jpg",
+    name: "Wavy",
+    artist: "Karan Aujla",
+    music: "music/Wavy.mp3",
   },
   {
-    img: "images/faded.png",
-    name: "Faded",
-    artist: "Alan Walker",
-    music: "music/Faded.mp3",
+    img: "images/strategy.png",
+    name: "Strategy",
+    artist: "TWICE, Megan Thee Stallion",
+    music: "music/Strategy.mp3",
   },
   {
-    img: "images/ratherbe.jpg",
-    name: "Rather Be",
-    artist: "Clean Bandit",
-    music: "music/Rather Be.mp3",
+    img: "images/dayNnite.jpeg",
+    name: "Day'N'Nite",
+    artist: "Kid Cudi",
+    music: "music/DaynNite.mp3",
+  },
+  {
+    img: "images/NF.jpg",
+    name: "Let You Down",
+    artist: "NF",
+    music: "music/Let_You_Down.mp3",
+  },
+  {
+    img: "images/noor.jpg",
+    name: "Noor",
+    artist: "Lost Stories, Akanksha Bhandari",
+    music: "music/Noor.mp3",
   },
 ];
+
+// DOM Elements for drag-and-drop and PiP
+let dropArea = document.getElementById("drop-area");
+let dragUploadZone = document.getElementById("drag-upload-zone");
+let fileInput = document.getElementById("file-upload");
+/* let pipVideo = document.getElementById("pip-video");
+let pipToggle = document.querySelector(".pip-toggle"); */
+
+// Flag for PiP mode
+let isPipActive = false;
 
 // Initialize queue with all tracks
 function initializeQueue() {
@@ -449,14 +466,14 @@ function processFiles(files) {
     const fileName = file.name.replace(/\.[^/.]+$/, "");
 
     // Generate a placeholder image based on the file name
-    const placeholderImageUrl = generatePlaceholderImage(fileName);
+    const placeholderImage = generatePlaceholderImage(fileName);
 
     // Create a new track object
     const newTrack = {
       name: fileName,
       artist: "Local File",
       music: audioUrl,
-      img: placeholderImageUrl,
+      img: placeholderImage,
     };
 
     // Add to music list
@@ -482,6 +499,217 @@ function processFiles(files) {
 
   // Reset the file input for future uploads
   fileInput.value = "";
+}
+
+// Generate a placeholder image with the first letter of the track name
+function generatePlaceholderImage(trackName) {
+  // Create a canvas element
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  // Set canvas dimensions
+  canvas.width = 200;
+  canvas.height = 200;
+
+  // Get the first character of the track name (or use a music note if empty)
+  const firstChar = trackName.trim().charAt(0).toUpperCase() || "♪";
+
+  // Generate a color based on the track name (for consistent colors per track)
+  const hue = Math.abs(
+    trackName.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360
+  );
+  const backgroundColor = `hsl(${hue}, 70%, 60%)`;
+
+  // Draw background
+  ctx.fillStyle = backgroundColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Add a slight pattern/gradient for visual interest
+  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  gradient.addColorStop(0, "rgba(255, 255, 255, 0.1)");
+  gradient.addColorStop(1, "rgba(0, 0, 0, 0.1)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw text
+  ctx.fillStyle = "white";
+  ctx.font = "bold 100px Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(firstChar, canvas.width / 2, canvas.height / 2);
+
+  // Add a music note icon if possible
+  ctx.font = "30px Arial, sans-serif";
+  ctx.fillText("♪", canvas.width / 2, canvas.height / 2 + 60);
+
+  // Convert canvas to data URL
+  return canvas.toDataURL("image/png");
+}
+
+// Picture-in-Picture Mode Functions
+async function togglePiP() {
+  if (!isPipActive) {
+    // Enable PiP mode
+    await enablePiP();
+  } else {
+    // Disable PiP mode
+    disablePiP();
+  }
+}
+
+async function enablePiP() {
+  try {
+    // Set up video element with the album art
+    setupPipVideo();
+
+    // Request Picture-in-Picture
+    await pipVideo.requestPictureInPicture();
+
+    // Update UI
+    isPipActive = true;
+    pipToggle.classList.add("active");
+    document.body.classList.add("pip-active");
+
+    // Add event listener for when PiP mode is exited
+    pipVideo.addEventListener("leavepictureinpicture", disablePiP);
+  } catch (error) {
+    console.error("Picture-in-Picture failed:", error);
+    showAddConfirmation(
+      "Picture-in-Picture failed. Your browser may not support this feature."
+    );
+  }
+}
+
+function disablePiP() {
+  // Exit PiP mode if active
+  if (document.pictureInPictureElement) {
+    document.exitPictureInPicture();
+  }
+
+  // Update UI
+  isPipActive = false;
+  pipToggle.classList.remove("active");
+  document.body.classList.remove("pip-active");
+
+  // Clean up video element
+  pipVideo.removeEventListener("leavepictureinpicture", disablePiP);
+  pipVideo.srcObject = null;
+  pipVideo.src = "";
+}
+
+function setupPipVideo() {
+  // Create a canvas to capture the current album art and visualizer
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  // Set canvas dimensions to match album art
+  canvas.width = 300;
+  canvas.height = 300;
+
+  // Get the album art element
+  const albumArt = document.querySelector(".track-art");
+
+  // Extract the background image URL
+  const computedStyle = window.getComputedStyle(albumArt);
+  const bgImage = computedStyle.backgroundImage;
+
+  // Create an image from the album art
+  const img = new Image();
+  img.src = bgImage.replace(/url\((['"])?(.*?)\1\)/gi, "$2");
+
+  // Create a stream from the canvas
+  const drawAlbumArt = () => {
+    // Draw background color
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue(
+      "--bg-color"
+    );
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw album art in a circle
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(
+      canvas.width / 2,
+      canvas.height / 2,
+      canvas.width / 2 - 10,
+      0,
+      Math.PI * 2
+    );
+    ctx.closePath();
+    ctx.clip();
+
+    // Draw the image if loaded
+    if (img.complete) {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    } else {
+      // Fill with a gradient if no image
+      const gradient = ctx.createRadialGradient(
+        canvas.width / 2,
+        canvas.height / 2,
+        10,
+        canvas.width / 2,
+        canvas.height / 2,
+        canvas.width / 2
+      );
+      gradient.addColorStop(
+        0,
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "--accent-color"
+        )
+      );
+      gradient.addColorStop(1, "black");
+      ctx.fillStyle = gradient;
+      ctx.fill();
+    }
+
+    // Draw track name
+    ctx.restore();
+    ctx.fillStyle = "white";
+    ctx.font = "bold 16px Poppins";
+    ctx.textAlign = "center";
+    ctx.fillText(track_name.textContent, canvas.width / 2, canvas.height - 40);
+
+    // Draw artist name
+    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.font = "14px Poppins";
+    ctx.fillText(
+      track_artist.textContent,
+      canvas.width / 2,
+      canvas.height - 20
+    );
+
+    // Draw visualizer based on wave state
+    if (isPlaying) {
+      const strokes = document.querySelectorAll(".stroke");
+      ctx.fillStyle = getComputedStyle(
+        document.documentElement
+      ).getPropertyValue("--accent-color");
+
+      // Calculate center position for visualizer
+      const startX = canvas.width / 2 - (strokes.length * 8) / 2;
+
+      // Draw bars similar to wave visualization
+      strokes.forEach((stroke, index) => {
+        const height = Math.random() * 20 + 5;
+        ctx.fillRect(startX + index * 8, canvas.height - 60, 4, -height);
+      });
+    }
+
+    // Request next frame
+    if (isPipActive) {
+      requestAnimationFrame(drawAlbumArt);
+    }
+  };
+
+  // Start drawing animation
+  drawAlbumArt();
+
+  // Create a stream from the canvas
+  const stream = canvas.captureStream();
+
+  // Set the stream as the source for the video
+  pipVideo.srcObject = stream;
+  pipVideo.play();
 }
 
 function loadTrack(track_index) {
@@ -736,63 +964,4 @@ function setUpdate() {
     curr_time.textContent = currentMinutes + ":" + currentSeconds;
     total_duration.textContent = durationMinutes + ":" + durationSeconds;
   }
-}
-
-// Generate a placeholder image with first letter of song name
-function generatePlaceholderImage(songName) {
-  // Create a canvas
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-
-  // Set dimensions
-  canvas.width = 300;
-  canvas.height = 300;
-
-  // Get first letter or first two letters
-  const firstLetter = songName.charAt(0).toUpperCase();
-  const secondLetter =
-    songName.length > 1 ? songName.charAt(1).toLowerCase() : "";
-  const initials = secondLetter ? firstLetter + secondLetter : firstLetter;
-
-  // Get accent color
-  const accentColor = getComputedStyle(document.documentElement)
-    .getPropertyValue("--accent-color")
-    .trim();
-
-  // Create gradient background
-  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  gradient.addColorStop(0, accentColor);
-  gradient.addColorStop(1, "#000000");
-
-  // Fill background
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Add some texture/pattern
-  ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
-  for (let i = 0; i < 5; i++) {
-    const size = Math.random() * 80 + 40;
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Add music icon
-  ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-  ctx.font = 'normal 120px "Font Awesome 5 Free"';
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("\uf001", canvas.width / 2, canvas.height / 2 - 20); // Music note icon
-
-  // Add text (song initials)
-  ctx.fillStyle = "white";
-  ctx.font = "bold 60px Poppins, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(initials, canvas.width / 2, canvas.height / 2 + 60);
-
-  // Return data URL
-  return canvas.toDataURL("image/jpeg");
 }

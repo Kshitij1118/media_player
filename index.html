@@ -31,9 +31,6 @@
         <div class="player-header">
           <h1 class="player-title">Music Player</h1>
           <div class="header-controls">
-            <!-- <div class="pip-toggle" onclick="togglePiP()" title="Picture in Picture">
-              <i class="fa-solid fa-external-link-alt"></i>
-            </div> -->
             <div class="theme-toggle" onclick="toggleTheme()">
               <i class="fa-solid fa-moon theme-icon" title="Switch to Light Theme"></i>
               <i class="fa-solid theme-icon" title="Switch to Dark Theme"></i>
@@ -42,7 +39,7 @@
         </div>
 
         <div class="details">
-          <div class="now-playing">PLAYING <span>1 OF 4</span></div>
+          <div class="now-playing">PLAYING <span>1 OF 6</span></div>
           <div class="track-art" id="drag-upload-zone" title="Drop files here to add to your playlist"></div>
           <div class="track-name">Track Name</div>
           <div class="track-artist">Track Artist</div>
@@ -113,16 +110,24 @@
         <div class="queue-header">
           <h3>Queue</h3>
           <div class="queue-actions">
-            <button class="add-songs-btn" onclick="toggleAddSongsMenu()">
+            <!-- <button class="add-songs-btn" onclick="toggleAddSongsMenu()">
+              <i class="fa-solid fa-plus"></i> Add Songs
+            </button>
+            <button class="upload-songs-btn" onclick="triggerFileUpload()">
+              <i class="fa-solid fa-upload"></i> Upload
+            </button> -->
+            <button class="close-queue" onclick="toggleQueue()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div class="queue-buttons-container">
+          <button class="add-songs-btn" onclick="toggleAddSongsMenu()">
               <i class="fa-solid fa-plus"></i> Add Songs
             </button>
             <button class="upload-songs-btn" onclick="triggerFileUpload()">
               <i class="fa-solid fa-upload"></i> Upload
             </button>
-            <button class="close-queue" onclick="toggleQueue()">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
         </div>
 
         <!-- Add Songs Menu -->
@@ -131,17 +136,14 @@
             <h4>Available Songs</h4>
           </div>
           <div class="available-songs-list">
-            <!-- Available songs will be dynamically added here -->
           </div>
         </div>
 
         <div class="queue-list">
-          <!-- Queue items will be dynamically added here -->
         </div>
       </div>
     </div>
 
-    <!-- Hidden file input for uploads -->
     <input type="file" id="file-upload" accept="audio/*" multiple style="display: none;" />
   </body>
 </html>

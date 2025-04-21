@@ -1000,3 +1000,68 @@ body {
     gap: 8px;
   }
 }
+
+/* Styling for the buttons container in the queue panel */
+.queue-buttons-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px 15px;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+/* Make buttons fill the available space equally */
+.queue-buttons-container button {
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 10px 15px;
+  border-radius: 25px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px var(--shadow-color);
+  transition: all 0.3s ease;
+}
+
+.queue-buttons-container .add-songs-btn {
+  background: var(--accent-medium);
+  border: none;
+}
+
+.queue-buttons-container .upload-songs-btn {
+  background: var(--accent-light);
+  border: none;
+}
+
+.queue-buttons-container button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  opacity: 0.9;
+}
+
+.queue-buttons-container button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 5px var(--shadow-color);
+}
+
+.queue-buttons-container button i {
+  margin-right: 6px;
+}
+
+/* Media query adjustments for smaller screens */
+@media screen and (max-width: 480px) {
+  .queue-buttons-container {
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 10px;
+  }
+  
+  .queue-buttons-container button {
+    width: 100%;
+  }
+}
