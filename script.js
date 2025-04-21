@@ -30,6 +30,11 @@ let queue = [];
 let themeIcon = document.querySelector(".theme-icon");
 let isLightTheme = false;
 
+// DOM Elements for drag-and-drop
+let dropArea = document.getElementById('drop-area');
+let dragUploadZone = document.getElementById('drag-upload-zone');
+let fileInput = document.getElementById('file-upload');
+
 const music_list = [
   {
     img: "images/stay.png",
@@ -318,8 +323,166 @@ function handleDragEnd() {
   this.classList.remove("dragging");
 }
 
-loadTrack(track_index);
-initializeQueue();
+// Load track and initialize app
+document.addEventListener("DOMContentLoaded", function () {
+  // Initial track loading
+  loadTrack(track_index);
+  initializeQueue();
+
+  // Load saved theme
+  const savedTheme = localStorage.getItem("musicPlayerTheme");
+  if (savedTheme === "light") {
+    enableLightTheme();
+  } else {
+    enableDarkTheme();
+  }
+
+  // Setup drag and drop
+  setupDragAndDrop();
+});
+
+// Setup drag and drop event listeners
+function setupDragAndDrop() {
+  // Prevent default drag behaviors
+  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+    document.body.addEventListener(eventName, preventDefaults, false);
+    dropArea.addEventListener(eventName, preventDefaults, false);
+    dragUploadZone.addEventListener(eventName, preventDefaults, false);
+  });
+
+  // Handle drag enter and leave for the main drop area
+  ["dragenter", "dragover"].forEach((eventName) => {
+    document.body.addEventListener(eventName, showDropArea, false);
+  });
+
+  ["dragleave", "drop"].forEach((eventName) => {
+    dropArea.addEventListener(eventName, hideDropArea, false);
+  });
+
+  // Handle drop on the drop area and album art zone
+  dropArea.addEventListener("drop", handleDrop, false);
+  dragUploadZone.addEventListener("drop", handleDrop, false);
+
+  // Highlight album art when files are dragged over it
+  ["dragenter", "dragover"].forEach((eventName) => {
+    dragUploadZone.addEventListener(eventName, highlightUploadZone, false);
+  });
+
+  ["dragleave", "drop"].forEach((eventName) => {
+    dragUploadZone.addEventListener(eventName, unhighlightUploadZone, false);
+  });
+
+  // Upload button functionality
+  fileInput.addEventListener("change", handleFileSelect, false);
+}
+
+// Prevent default drag behaviors
+function preventDefaults(e) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+// Show the drop area when a file is dragged over the document
+function showDropArea(e) {
+  if (!isEventOnDroppableArea(e)) {
+    dropArea.classList.add("active");
+  }
+}
+
+// Hide the drop area when the file is dragged away
+function hideDropArea() {
+  dropArea.classList.remove("active");
+}
+
+// Highlight the album art when a file is dragged over it
+function highlightUploadZone() {
+  dragUploadZone.classList.add("drag-over");
+}
+
+// Remove highlight from album art
+function unhighlightUploadZone() {
+  dragUploadZone.classList.remove("drag-over");
+}
+
+// Check if an event is happening on a droppable area (album art or upload zone)
+function isEventOnDroppableArea(e) {
+  const elements = document.elementsFromPoint(e.clientX, e.clientY);
+  return elements.includes(dragUploadZone);
+}
+
+// Handle dropped files
+function handleDrop(e) {
+  const dt = e.dataTransfer;
+  const files = dt.files;
+
+  processFiles(files);
+}
+
+// Trigger file input when upload button is clicked
+function triggerFileUpload() {
+  fileInput.click();
+}
+
+// Handle files selected via file input
+function handleFileSelect(e) {
+  const files = e.target.files;
+  processFiles(files);
+}
+
+// Process audio files
+function processFiles(files) {
+  const audioFiles = [...files].filter((file) =>
+    file.type.startsWith("audio/")
+  );
+
+  if (audioFiles.length === 0) {
+    showAddConfirmation("No valid audio files found");
+    return;
+  }
+
+  // Process each audio file
+  audioFiles.forEach((file) => {
+    // Create object URL for the file
+    const audioUrl = URL.createObjectURL(file);
+
+    // Extract filename without extension as track name
+    const fileName = file.name.replace(/\.[^/.]+$/, "");
+
+    // Generate a placeholder image based on the file name
+    const placeholderImageUrl = generatePlaceholderImage(fileName);
+
+    // Create a new track object
+    const newTrack = {
+      name: fileName,
+      artist: "Local File",
+      music: audioUrl,
+      img: placeholderImageUrl,
+    };
+
+    // Add to music list
+    music_list.push(newTrack);
+
+    // Add to the queue
+    const newIndex = music_list.length - 1;
+    queue.push(newIndex);
+
+    // Show confirmation
+    showAddConfirmation(`"${fileName}" added to queue`);
+  });
+
+  // If this is the first track, load it
+  if (music_list.length === audioFiles.length) {
+    track_index = 0;
+    loadTrack(track_index);
+  }
+
+  // Update the queue
+  renderQueue();
+  renderAvailableSongs();
+
+  // Reset the file input for future uploads
+  fileInput.value = "";
+}
 
 function loadTrack(track_index) {
   clearInterval(updateTimer);
@@ -343,15 +506,6 @@ function loadTrack(track_index) {
     renderQueue();
   }
 }
-
-document.addEventListener("DOMContentLoaded", function () {
-  const savedTheme = localStorage.getItem("musicPlayerTheme");
-  if (savedTheme === "light") {
-    enableLightTheme();
-  } else {
-    enableDarkTheme();
-  }
-});
 
 function toggleTheme() {
   if (isLightTheme) {
@@ -582,4 +736,63 @@ function setUpdate() {
     curr_time.textContent = currentMinutes + ":" + currentSeconds;
     total_duration.textContent = durationMinutes + ":" + durationSeconds;
   }
+}
+
+// Generate a placeholder image with first letter of song name
+function generatePlaceholderImage(songName) {
+  // Create a canvas
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  // Set dimensions
+  canvas.width = 300;
+  canvas.height = 300;
+
+  // Get first letter or first two letters
+  const firstLetter = songName.charAt(0).toUpperCase();
+  const secondLetter =
+    songName.length > 1 ? songName.charAt(1).toLowerCase() : "";
+  const initials = secondLetter ? firstLetter + secondLetter : firstLetter;
+
+  // Get accent color
+  const accentColor = getComputedStyle(document.documentElement)
+    .getPropertyValue("--accent-color")
+    .trim();
+
+  // Create gradient background
+  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  gradient.addColorStop(0, accentColor);
+  gradient.addColorStop(1, "#000000");
+
+  // Fill background
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Add some texture/pattern
+  ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+  for (let i = 0; i < 5; i++) {
+    const size = Math.random() * 80 + 40;
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Add music icon
+  ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+  ctx.font = 'normal 120px "Font Awesome 5 Free"';
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("\uf001", canvas.width / 2, canvas.height / 2 - 20); // Music note icon
+
+  // Add text (song initials)
+  ctx.fillStyle = "white";
+  ctx.font = "bold 60px Poppins, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(initials, canvas.width / 2, canvas.height / 2 + 60);
+
+  // Return data URL
+  return canvas.toDataURL("image/jpeg");
 }

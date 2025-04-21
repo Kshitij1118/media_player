@@ -865,3 +865,138 @@ body {
   font-size: 0.9rem;
   font-style: italic;
 }
+
+/* Drop area for file uploads */
+#drop-area {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+#drop-area.active {
+  visibility: visible;
+  opacity: 1;
+}
+
+.drop-message {
+  text-align: center;
+  color: white;
+  padding: 30px;
+  border: 3px dashed var(--accent-color);
+  border-radius: 20px;
+  background: rgba(40, 40, 55, 0.7);
+  backdrop-filter: blur(5px);
+}
+
+.drop-message i {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  color: var(--accent-color);
+}
+
+.drop-message p {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+/* Drag upload zone (album art) */
+#drag-upload-zone {
+  position: relative;
+  overflow: hidden;
+}
+
+#drag-upload-zone::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#drag-upload-zone.drag-over::before {
+  opacity: 1;
+}
+
+#drag-upload-zone.drag-over::after {
+  content: "\f0ee"; /* Cloud upload icon */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  color: white;
+  z-index: 3;
+}
+
+/* Header controls */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Upload songs button */
+.upload-songs-btn {
+  background: var(--accent-light);
+  border: 1px solid var(--accent-medium);
+  color: var(--panel-header-color);
+  font-size: 0.9rem;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+}
+
+.upload-songs-btn:hover {
+  background: var(--accent-medium);
+  transform: translateY(-2px);
+}
+
+/* Responsive styles for the new elements */
+@media screen and (max-width: 768px) {
+  .header-controls {
+    gap: 10px;
+  }
+  
+  .drop-message {
+    padding: 20px;
+  }
+  
+  .drop-message i {
+    font-size: 2.5rem;
+  }
+  
+  .drop-message p {
+    font-size: 1rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .header-controls {
+    gap: 8px;
+  }
+}

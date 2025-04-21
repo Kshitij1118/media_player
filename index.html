@@ -18,22 +18,32 @@
     />
   </head>
   <body>
+    <!-- Drop area overlay for drag and drop files -->
+    <div id="drop-area">
+      <div class="drop-message">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <p>Drop your audio files here</p>
+      </div>
+    </div>
+
     <div class="player">
       <div class="wrapper">
         <div class="player-header">
-          <h1 class="player-title">My Music</h1>
-          <div class="theme-toggle" onclick="toggleTheme()">
-            <i
-              class="fa-solid fa-moon theme-icon"
-              title="Switch to Light Theme"
-            ></i>
-            <i class="fa-solid theme-icon" title="Switch to Dark Theme"></i>
+          <h1 class="player-title">Music Player</h1>
+          <div class="header-controls">
+            <!-- <div class="pip-toggle" onclick="togglePiP()" title="Picture in Picture">
+              <i class="fa-solid fa-external-link-alt"></i>
+            </div> -->
+            <div class="theme-toggle" onclick="toggleTheme()">
+              <i class="fa-solid fa-moon theme-icon" title="Switch to Light Theme"></i>
+              <i class="fa-solid theme-icon" title="Switch to Dark Theme"></i>
+            </div>
           </div>
         </div>
 
         <div class="details">
           <div class="now-playing">PLAYING <span>1 OF 4</span></div>
-          <div class="track-art"></div>
+          <div class="track-art" id="drag-upload-zone" title="Drop files here to add to your playlist"></div>
           <div class="track-name">Track Name</div>
           <div class="track-artist">Track Artist</div>
         </div>
@@ -106,6 +116,9 @@
             <button class="add-songs-btn" onclick="toggleAddSongsMenu()">
               <i class="fa-solid fa-plus"></i> Add Songs
             </button>
+            <button class="upload-songs-btn" onclick="triggerFileUpload()">
+              <i class="fa-solid fa-upload"></i> Upload
+            </button>
             <button class="close-queue" onclick="toggleQueue()">
               <i class="fa-solid fa-xmark"></i>
             </button>
@@ -127,5 +140,8 @@
         </div>
       </div>
     </div>
+
+    <!-- Hidden file input for uploads -->
+    <input type="file" id="file-upload" accept="audio/*" multiple style="display: none;" />
   </body>
 </html>
